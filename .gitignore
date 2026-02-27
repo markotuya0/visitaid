@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 .venv/
 dist/
+
+# Dev scaffolding (local only, never commit)
+TONIGHT.md
+.claude/
