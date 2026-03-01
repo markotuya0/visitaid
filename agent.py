@@ -12,6 +12,8 @@ HOW IT WORKS:
     4. ElevenLabs speaks responses, Deepgram listens for user voice input
 """
 
+import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -26,6 +28,28 @@ from vision_agents.plugins import deepgram    # Voice input (hears the user)
 
 # Load all API keys from .env file automatically
 load_dotenv()
+
+# Validate required API keys are present before anything else runs
+REQUIRED_KEYS = {
+    "STREAM_API_KEY": "https://getstream.io/dashboard/",
+    "STREAM_API_SECRET": "https://getstream.io/dashboard/",
+    "GOOGLE_API_KEY": "https://aistudio.google.com/apikey",
+    "ELEVENLABS_API_KEY": "https://elevenlabs.io/app/settings/api-keys",
+    "DEEPGRAM_API_KEY": "https://console.deepgram.com/",
+}
+
+missing = [
+    f"  - {key}  → Get it from: {url}"
+    for key, url in REQUIRED_KEYS.items()
+    if not os.getenv(key)
+]
+
+if missing:
+    print("\n⚠️  Missing API keys! The agent cannot start without these:\n")
+    print("\n".join(missing))
+    print("\nCopy .env.example to .env and fill in the values:")
+    print("  cp .env.example .env\n")
+    sys.exit(1)
 
 # Read the agent's instructions from a separate file
 # (keeping prompts in .md files makes them easy to edit without touching code)
