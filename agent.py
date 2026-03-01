@@ -12,10 +12,13 @@ HOW IT WORKS:
     4. ElevenLabs speaks responses, Deepgram listens for user voice input
 """
 
+import logging
 import os
 import sys
 from pathlib import Path
 from dotenv import load_dotenv
+
+logger = logging.getLogger("visitaid")
 
 # Vision Agents core — the main building blocks
 from vision_agents.core import Agent, AgentLauncher, User, Runner
@@ -45,22 +48,21 @@ missing = [
 ]
 
 if missing:
-    print("\n⚠️  Missing API keys! The agent cannot start without these:\n")
-    print("\n".join(missing))
-    print("\nCopy .env.example to .env and fill in the values:")
-    print("  cp .env.example .env\n")
+    logger.error("Missing API keys! The agent cannot start without these:")
+    for line in missing:
+        logger.error(line)
+    logger.error("Copy .env.example to .env and fill in the values: cp .env.example .env")
     sys.exit(1)
 
 # Read the agent's instructions from a separate file
 instructions_path = Path("instructions.md")
 if not instructions_path.exists():
-    print("\n⚠️  instructions.md not found! The agent needs this file for its behavior rules.")
-    print("  Create it in the project root directory.\n")
+    logger.error("instructions.md not found! The agent needs this file for its behavior rules.")
     sys.exit(1)
 
 INSTRUCTIONS = instructions_path.read_text().strip()
 if not INSTRUCTIONS:
-    print("\n⚠️  instructions.md is empty! The agent needs behavior rules to function.\n")
+    logger.error("instructions.md is empty! The agent needs behavior rules to function.")
     sys.exit(1)
 
 
@@ -103,13 +105,13 @@ async def join_call(agent: Agent, call_type: str, call_id: str, **kwargs) -> Non
     """
 
     if not call_type or not call_id:
-        print(f"⚠️  Invalid call request: call_type={call_type!r}, call_id={call_id!r}")
+        logger.warning("Invalid call request: call_type=%r, call_id=%r", call_type, call_id)
         return
 
     try:
         call = await agent.create_call(call_type, call_id)
     except Exception as e:
-        print(f"❌ Failed to create call {call_id}: {e}")
+        logger.error("Failed to create call %s: %s", call_id, e)
         return
 
     try:
@@ -129,7 +131,7 @@ async def join_call(agent: Agent, call_type: str, call_id: str, **kwargs) -> Non
 
             await agent.finish()
     except Exception as e:
-        print(f"❌ Call {call_id} ended with error: {e}")
+        logger.error("Call %s ended with error: %s", call_id, e)
 
 
 if __name__ == "__main__":
