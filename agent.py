@@ -14,9 +14,15 @@ from pathlib import Path
 import certifi
 from dotenv import load_dotenv
 
-# Fix macOS missing SSL root certificates
+# Fix macOS missing SSL root certificates — patch ssl globally so every
+# library (websockets, getstream, deepgram, etc.) picks up certifi's CA bundle
 os.environ.setdefault("SSL_CERT_FILE", certifi.where())
-ssl.create_default_context().load_verify_locations(certifi.where())
+os.environ.setdefault("SSL_CERT_DIR", os.path.dirname(certifi.where()))
+_real_create_default_context = ssl.create_default_context
+def _patched_create_default_context(*args, **kwargs):
+    kwargs.setdefault("cafile", certifi.where())
+    return _real_create_default_context(*args, **kwargs)
+ssl.create_default_context = _patched_create_default_context
 
 from vision_agents.core import Agent, AgentLauncher, User, Runner
 from vision_agents.plugins import getstream, gemini, elevenlabs, deepgram
