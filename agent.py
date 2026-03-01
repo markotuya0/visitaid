@@ -106,23 +106,30 @@ async def join_call(agent: Agent, call_type: str, call_id: str, **kwargs) -> Non
         print(f"⚠️  Invalid call request: call_type={call_type!r}, call_id={call_id!r}")
         return
 
-    call = await agent.create_call(call_type, call_id)
+    try:
+        call = await agent.create_call(call_type, call_id)
+    except Exception as e:
+        print(f"❌ Failed to create call {call_id}: {e}")
+        return
 
-    async with agent.join(call):
+    try:
+        async with agent.join(call):
 
-        # Greet the user — also "wakes up" the agent since video alone
-        # doesn't trigger responses (a Vision Agents quirk)
-        try:
-            await agent.simple_response(
-                "VisitAid is active. I'm watching through your camera now. "
-                "Tell me what you need, or ask me what's around you."
-            )
-        except Exception:
-            # Greeting failed, but don't kill the call — the agent can
-            # still respond to the user's voice once they speak
-            pass
+            # Greet the user — also "wakes up" the agent since video alone
+            # doesn't trigger responses (a Vision Agents quirk)
+            try:
+                await agent.simple_response(
+                    "VisitAid is active. I'm watching through your camera now. "
+                    "Tell me what you need, or ask me what's around you."
+                )
+            except Exception:
+                # Greeting failed, but don't kill the call — the agent can
+                # still respond to the user's voice once they speak
+                pass
 
-        await agent.finish()
+            await agent.finish()
+    except Exception as e:
+        print(f"❌ Call {call_id} ended with error: {e}")
 
 
 if __name__ == "__main__":
