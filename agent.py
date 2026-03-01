@@ -81,6 +81,13 @@ async def join_call(agent: Agent, call_type: str, call_id: str, **kwargs) -> Non
         logger.warning("Invalid call request: call_type=%r, call_id=%r", call_type, call_id)
         return
 
+    # Register agent user with Stream before creating the call
+    try:
+        await agent.create_user()
+    except Exception as e:
+        logger.error("Failed to register agent user: %s", e)
+        return
+
     # Create call with one retry on transient failure
     call = None
     for attempt in range(2):
