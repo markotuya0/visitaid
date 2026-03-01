@@ -133,9 +133,8 @@ async def join_call(agent: Agent, call_type: str, call_id: str, **kwargs) -> Non
 
 
 if __name__ == "__main__":
-    # Wire everything together and start the HTTP server
-    # After running `uv run agent.py serve`, the agent listens for incoming calls
+    # SDK provides /health (200 OK) and /ready endpoints out of the box
     Runner(AgentLauncher(
         create_agent=create_agent,
-        join_call=join_call
+        join_call=join_call,
     )).cli()
