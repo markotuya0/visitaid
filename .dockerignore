@@ -1,0 +1,16 @@
+.env
+.env.example
+.git
+.gitignore
+.claude
+.venv
+__pycache__
+*.pyc
+*.pt
+CLAUDE.md
+CONTRIBUTING.md
+TONIGHT.md
+README.md
+blog-post.md
+Dockerfile
+docker-compose.yml
