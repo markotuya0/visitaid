@@ -67,7 +67,7 @@ Phone Camera                                          User's Ears
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/visitaid.git
+git clone https://github.com/markotuya0/visitaid.git
 cd visitaid
 uv sync
 ```

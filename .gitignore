@@ -1,10 +1,25 @@
+# Secrets
 .env
+*.key
+*.pem
+*.secret
+
+# Python
 __pycache__/
-*.pt
 *.pyc
+*.pyo
 .venv/
 dist/
+*.egg-info/
 
-# Dev scaffolding (local only, never commit)
+# Model files
+*.pt
+*.onnx
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dev scaffolding (local only)
 TONIGHT.md
 .claude/
