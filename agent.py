@@ -7,9 +7,16 @@ Usage: uv run agent.py serve
 import asyncio
 import logging
 import os
+import ssl
 import sys
 from pathlib import Path
+
+import certifi
 from dotenv import load_dotenv
+
+# Fix macOS missing SSL root certificates
+os.environ.setdefault("SSL_CERT_FILE", certifi.where())
+ssl.create_default_context().load_verify_locations(certifi.where())
 
 from vision_agents.core import Agent, AgentLauncher, User, Runner
 from vision_agents.plugins import getstream, gemini, elevenlabs, deepgram

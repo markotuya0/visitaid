@@ -5,6 +5,7 @@ description = "Real-time AI assistant for visually impaired people"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "certifi>=2026.2.25",
     "python-dotenv>=1.2.1",
     "vision-agents[deepgram,elevenlabs,gemini,getstream]>=0.3.8",
 ]
