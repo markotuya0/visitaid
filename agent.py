@@ -12,6 +12,7 @@ HOW IT WORKS:
     4. ElevenLabs speaks responses, Deepgram listens for user voice input
 """
 
+import asyncio
 import logging
 import os
 import sys
@@ -108,26 +109,40 @@ async def join_call(agent: Agent, call_type: str, call_id: str, **kwargs) -> Non
         logger.warning("Invalid call request: call_type=%r, call_id=%r", call_type, call_id)
         return
 
-    try:
-        call = await agent.create_call(call_type, call_id)
-    except Exception as e:
-        logger.error("Failed to create call %s: %s", call_id, e)
-        return
+    # Try to create the call, retry once on transient failure
+    call = None
+    for attempt in range(2):
+        try:
+            call = await agent.create_call(call_type, call_id)
+            break
+        except Exception as e:
+            if attempt == 0:
+                logger.warning("Failed to create call %s, retrying: %s", call_id, e)
+                await asyncio.sleep(2)
+            else:
+                logger.error("Failed to create call %s after retry: %s", call_id, e)
+                return
 
     try:
         async with agent.join(call):
 
             # Greet the user — also "wakes up" the agent since video alone
-            # doesn't trigger responses (a Vision Agents quirk)
-            try:
-                await agent.simple_response(
-                    "VisitAid is active. I'm watching through your camera now. "
-                    "Tell me what you need, or ask me what's around you."
-                )
-            except Exception:
-                # Greeting failed, but don't kill the call — the agent can
-                # still respond to the user's voice once they speak
-                pass
+            # doesn't trigger responses (a Vision Agents quirk).
+            # Retry once on failure, then fall back to a simpler message.
+            greeting = (
+                "VisitAid is active. I'm watching through your camera now. "
+                "Tell me what you need, or ask me what's around you."
+            )
+            for attempt in range(2):
+                try:
+                    await agent.simple_response(greeting)
+                    break
+                except Exception:
+                    if attempt == 0:
+                        logger.warning("Greeting failed, retrying in 2s...")
+                        await asyncio.sleep(2)
+                    else:
+                        logger.warning("Greeting retry failed, continuing without greeting")
 
             await agent.finish()
     except Exception as e:
