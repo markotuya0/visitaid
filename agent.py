@@ -52,8 +52,16 @@ if missing:
     sys.exit(1)
 
 # Read the agent's instructions from a separate file
-# (keeping prompts in .md files makes them easy to edit without touching code)
-INSTRUCTIONS = Path("instructions.md").read_text()
+instructions_path = Path("instructions.md")
+if not instructions_path.exists():
+    print("\n⚠️  instructions.md not found! The agent needs this file for its behavior rules.")
+    print("  Create it in the project root directory.\n")
+    sys.exit(1)
+
+INSTRUCTIONS = instructions_path.read_text().strip()
+if not INSTRUCTIONS:
+    print("\n⚠️  instructions.md is empty! The agent needs behavior rules to function.\n")
+    sys.exit(1)
 
 
 async def create_agent(**kwargs) -> Agent:
@@ -94,21 +102,26 @@ async def join_call(agent: Agent, call_type: str, call_id: str, **kwargs) -> Non
     It runs every time a new video call starts.
     """
 
-    # Create a "call" — Stream's term for a video session
+    if not call_type or not call_id:
+        print(f"⚠️  Invalid call request: call_type={call_type!r}, call_id={call_id!r}")
+        return
+
     call = await agent.create_call(call_type, call_id)
 
-    # Join the call and start processing audio + video
     async with agent.join(call):
 
-        # Greet the user as soon as they connect
-        # This also "wakes up" the agent — video alone doesn't trigger responses
-        # The agent needs audio or text to start (a Vision Agents quirk)
-        await agent.simple_response(
-            "VisitAid is active. I'm watching through your camera now. "
-            "Tell me what you need, or ask me what's around you."
-        )
+        # Greet the user — also "wakes up" the agent since video alone
+        # doesn't trigger responses (a Vision Agents quirk)
+        try:
+            await agent.simple_response(
+                "VisitAid is active. I'm watching through your camera now. "
+                "Tell me what you need, or ask me what's around you."
+            )
+        except Exception:
+            # Greeting failed, but don't kill the call — the agent can
+            # still respond to the user's voice once they speak
+            pass
 
-        # Keep the agent running until the call ends
         await agent.finish()
 
 
