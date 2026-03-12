@@ -1,6 +1,6 @@
 # VisitAid
 
-**Real-time AI eyes for visually impaired people.**
+**Real-time AI eyes for visually impaired people. Built in 48 hours for WeMakeDevs Vision Hackathon 2025. 154 lines of Python. Fully autonomous — no button presses, no tapping, no waiting.**
 
 250 million people worldwide are visually impaired. Existing assistive tools require tapping, waiting, and looking at screens. VisitAid watches continuously through a phone camera and speaks in real-time — like having a trusted guide walking beside you.
 
